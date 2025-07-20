@@ -24,6 +24,9 @@ class AuthController extends Controller
             'password' => bcrypt($validated['password']),
         ]);
 
+        // Hapus semua token lama user setelah register (opsional, untuk keamanan ekstra)
+        $user->tokens()->delete();
+
         $token = $user->createToken('api-token')->plainTextToken;
 
         return response()->json([
@@ -48,11 +51,21 @@ class AuthController extends Controller
             ]);
         }
 
+        // Hapus semua token lama user sebelum membuat token baru
+        $user->tokens()->delete();
+
         $token = $user->createToken('api-token')->plainTextToken;
 
         return response()->json([
             'user'  => $user,
             'token' => $token,
         ], 200);
+    }
+
+    // ✅ Fungsi logout
+    public function logout(Request $request)
+    {
+        $request->user()->currentAccessToken()->delete();
+        return response()->json(['message' => 'Logout berhasil']);
     }
 }
